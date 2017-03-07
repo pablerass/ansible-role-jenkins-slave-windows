@@ -1,0 +1,6 @@
+---
+# vars file for windows-slave
+jenkins_service_home: "C:\\Windows\\system32\\config\\systemprofile"
+jenkins_user_home: "C:\\Users\\{{jenkins_slave_user}}"
+
+jenkins_slave_dir: "C:\\Jenkins"

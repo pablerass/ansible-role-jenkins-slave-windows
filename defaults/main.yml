@@ -1,0 +1,3 @@
+---
+# defaults file for jenkins-slave-windows
+jenkins_slave_user: "jenkins"

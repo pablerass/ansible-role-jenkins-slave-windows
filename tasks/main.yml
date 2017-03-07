@@ -1,0 +1,28 @@
+---
+# tasks file for windows-slave
+- include: "user.yml"
+
+- meta: flush_handlers
+
+- name: "Base packages"
+  win_chocolatey:
+    name={{item}}
+  with_items:
+    - notepadplusplus.install
+    - 7zip.install
+    - cmder
+    - sysinternals
+
+- meta: flush_handlers
+
+- include: "config.yml"
+
+- meta: flush_handlers
+
+- name: "Build packages"
+  win_chocolatey:
+    name={{item}}
+  with_items:
+    - git.install
+    - googlechrome
+    - nodejs.install

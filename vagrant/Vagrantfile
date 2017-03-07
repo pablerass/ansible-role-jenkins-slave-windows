@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial64"
+
+  config.vm.box_check_update = false
+
+  config.vm.network "private_network", ip: "192.168.50.4"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "ansible-role-jenkins"
+     vb.memory = "1024"
+  end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yml"
+    ansible.extra_vars = {
+      ansible_python_interpreter: "/usr/bin/python3"
+    }
+    #ansible.verbose = "vvv"
+  end
+end

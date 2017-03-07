@@ -1,0 +1,43 @@
+#!powershell
+
+# WANT_JSON
+# POWERSHELL_COMMON
+
+$expInfFile = Join-Path (Get-Location).Path "Exported.inf"
+$newInfFile = Join-Path (Get-Location).Path "ToImport.inf"
+
+# User to configure
+$domain = (Get-WmiObject Win32_ComputerSystem).Name
+$user = "{{jenkins_slave_user}}"
+
+# Get SID
+$userObject = New-Object System.Security.Principal.NTAccount($domain, $user)
+$SIDObject = $userObject.Translate([System.Security.Principal.SecurityIdentifier])
+$SID = $sidObject.Value
+
+# Get list of currently configured SIDs
+secedit /export /cfg $expInfFile
+$currentConfig = (Select-String $expInfFile -Pattern "SeServiceLogonRight").Line
+
+# Create temp inf file
+Add-Content $newInfFile "[Unicode]"
+Add-Content $newInfFile "Unicode=yes"
+Add-Content $newInfFile "[Version]"
+Add-Content $newInfFile "signature=`"`$CHICAGO$`""
+Add-Content $newInfFile "Revision=1"
+Add-Content $newInfFile "[Registry Values]"
+Add-Content $newInfFile "[Profile Description]"
+Add-Content $newInfFile "Description=This is a security template to grant log on as service access"
+Add-Content $newInfFile "[Privilege Rights]"
+Add-Content $newInfFile "$currentConfig,*$SID"
+
+secedit /configure /db secedit.sdb /cfg "$newInfFile"
+$exit = $LASTEXITCODE
+if($exit -ne 0)
+{
+    Write-Error "Error updating SeServiceLogonRight with secedit"
+    exit $exit
+}
+
+gpupdate /force
+exit 0

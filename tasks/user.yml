@@ -1,0 +1,28 @@
+---
+- name: "Jenkins slave user"
+  win_user:
+    name: "{{jenkins_slave_user}}"
+    password: "{{jenkins_slave_password}}"
+    groups:
+      - "Administrators"
+
+- name: "Jenkins slave dir"
+  win_file:
+    path: "{{jenkins_slave_dir}}"
+    state: "directory"
+
+- name: "Jenkins slave dir privileges"
+  win_acl:
+    path: "{{jenkins_slave_dir}}"
+    propagation: "InheritOnly"
+    rights: "FullControl"
+    type: "allow"
+    user: "{{jenkins_slave_user}}"
+
+- name: "Jenkins SSH dir"
+  win_file:
+    path: "{{item}}\\.ssh"
+    state: "directory"
+  with_items:
+    - "{{jenkins_service_home}}"
+    - "{{jenkins_user_home}}"

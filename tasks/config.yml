@@ -1,0 +1,39 @@
+---
+# FIXME: This is not idempotent, command doest not return stdout
+- name: "PowerShell execution policy unrestricted"
+  raw: Set-ExecutionPolicy Unrestricted
+
+# FIXME: This is not idempotent, command doest not return stdout
+- name: "Windows firewall disabled"
+  raw: Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+  register: windows_firewall_disabled
+
+- name: "Configuration scripts"
+  template:
+    src: "{{item}}.j2"
+    dest: "C:\\{{item}}"
+  with_items:
+    - user-logon-as-service.ps1
+    - change-registry-privs.ps1
+
+# FIXME: This is not idempotent
+- name: "User log as a service"
+  raw: C:\user-logon-as-service.ps1
+
+# FIXME: This is not idempotent
+- name: "Registry privileges"
+  raw: C:\change-registry-privs.ps1
+
+- name: "Jenkins needed packages"
+  win_chocolatey:
+    name: "{{item}}"
+  with_items:
+    - jre8
+
+# FIXME: This is ugly, should be done using win_feature for 'NetFx3', but it
+# does not work with current Ansible version.
+- name: "Jenkins needed .Net Framework 3.5 Feature"
+  raw: 'Install-WindowsFeature Net-Framework-Core'
+  register: feature_net_framework
+  changed_when:
+    ('NoChangeNeeded' not in feature_net_framework.stdout)
